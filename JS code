@@ -1,0 +1,217 @@
+// Blog data storage
+let blogs = [
+    { id: 1, title: "Getting Started with Modern Web Development", content: "Web development has evolved significantly over the past decade. From simple HTML pages to complex single-page applications, the landscape continues to change rapidly. In this comprehensive guide, we'll explore the latest trends, tools, and techniques that are shaping the future of web development. Whether you're a beginner looking to start your journey or an experienced developer wanting to stay current, this post covers everything you need to know about modern web development practices.", category: "Technology", date: "2025-01-15", views: 245, likes: 18 },
+    { id: 2, title: "The Art of Minimalist Design", content: "Minimalism in design isn't just about using fewer elements—it's about creating maximum impact with minimum complexity. This design philosophy has gained tremendous popularity in recent years, influencing everything from mobile apps to architectural projects. Learn the core principles that drive effective minimalist design and discover how to apply them in your own projects for better user experience and visual appeal.", category: "Design", date: "2025-01-10", views: 189, likes: 24 },
+    { id: 3, title: "Sustainable Living in 2025", content: "As we move forward in 2025, sustainable living has become more important than ever before. Climate change, environmental degradation, and resource depletion are pressing concerns that require immediate action. From renewable energy adoption to zero-waste practices, discover practical ways to reduce your environmental footprint and make a positive impact on our planet. Small changes in daily habits can lead to significant environmental benefits.", category: "Lifestyle", date: "2025-01-05", views: 312, likes: 45 },
+    { id: 4, title: "Building Scalable Business Models", content: "Creating a business that can grow and adapt to market changes is crucial for long-term success. Scalability isn't just about handling more customers or generating more revenue—it's about building systems, processes, and cultures that can evolve efficiently. This post explores proven strategies for building scalable business models that can withstand market fluctuations and drive sustainable growth.", category: "Business", date: "2025-01-08", views: 156, likes: 31 }
+];
+
+let filteredBlogs = [...blogs];
+let currentSearchTerm = '';
+let currentCategory = 'All';
+let currentSort = 'date';
+let lastId = blogs.length > 0 ? Math.max(...blogs.map(b => b.id)) : 0;
+
+// DOM Elements
+const blogGrid = document.getElementById('blogGrid');
+const emptyState = document.getElementById('emptyState');
+const searchInput = document.getElementById('searchInput');
+const categoryFilter = document.getElementById('categoryFilter');
+const sortBy = document.getElementById('sortBy');
+const visibleCount = document.getElementById('visibleCount');
+const totalCount = document.getElementById('totalCount');
+const activeFiltersContainer = document.getElementById('activeFilters');
+const blogModal = document.getElementById('blogModal');
+const blogForm = document.getElementById('blogForm');
+const openModalBtn = document.getElementById('openModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const cancelModalBtn = document.getElementById('cancelModalBtn');
+
+// Helper function to calculate read time
+function calculateReadTime(content) {
+    const wordsPerMinute = 200;
+    const wordCount = content.split(/\s+/).length;
+    return Math.ceil(wordCount / wordsPerMinute);
+}
+
+// Render a single blog card
+function createBlogCard(blog, index) {
+    const card = document.createElement('div');
+    card.classList.add('blog-card');
+    card.style.animationDelay = `${index * 0.1}s`;
+    
+    const readTime = calculateReadTime(blog.content);
+
+    card.innerHTML = `
+        <div class="blog-card-content">
+            <div class="blog-card-header">
+                <span class="category-tag category-${blog.category.toLowerCase()}">
+                    ${blog.category}
+                </span>
+                <button class="delete-btn" data-id="${blog.id}"><i class="fas fa-trash-alt"></i></button>
+            </div>
+            <h3 class="blog-title">${blog.title}</h3>
+            <p class="blog-content">${blog.content}</p>
+            <div class="blog-stats">
+                <div class="stats-left">
+                    <span class="stat-item"><i class="fas fa-eye"></i> ${blog.views}</span>
+                    <button class="like-btn" data-id="${blog.id}">
+                        <i class="fas fa-heart"></i> <span class="like-count">${blog.likes}</span>
+                    </button>
+                </div>
+                <div class="read-time">${readTime} min read</div>
+            </div>
+            <div class="blog-footer">
+                <div class="blog-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>${new Date(blog.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                </div>
+                <a href="#" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    `;
+
+    // Add event listeners for like and delete buttons
+    card.querySelector('.like-btn').addEventListener('click', (e) => {
+        const id = parseInt(e.currentTarget.dataset.id);
+        const blogToUpdate = blogs.find(b => b.id === id);
+        if (blogToUpdate) {
+            blogToUpdate.likes += 1;
+            renderBlogs();
+        }
+    });
+
+    card.querySelector('.delete-btn').addEventListener('click', (e) => {
+        const id = parseInt(e.currentTarget.dataset.id);
+        blogs = blogs.filter(b => b.id !== id);
+        handleFilterSort();
+    });
+
+    return card;
+}
+
+// Render all blogs based on current filters and sort order
+function renderBlogs() {
+    blogGrid.innerHTML = '';
+    if (filteredBlogs.length === 0) {
+        blogGrid.style.display = 'none';
+        emptyState.style.display = 'block';
+    } else {
+        blogGrid.style.display = 'grid';
+        emptyState.style.display = 'none';
+        filteredBlogs.forEach((blog, index) => {
+            blogGrid.appendChild(createBlogCard(blog, index));
+        });
+    }
+}
+
+// Update stats and filter tags
+function updateStats() {
+    totalCount.textContent = blogs.length;
+    visibleCount.textContent = filteredBlogs.length;
+    
+    activeFiltersContainer.innerHTML = '';
+    if (currentSearchTerm) {
+        activeFiltersContainer.innerHTML += `<span class="filter-tag">Search: "${currentSearchTerm}" <span class="remove-filter" data-filter="search">&times;</span></span>`;
+    }
+    if (currentCategory !== 'All') {
+        activeFiltersContainer.innerHTML += `<span class="filter-tag">Category: ${currentCategory} <span class="remove-filter" data-filter="category">&times;</span></span>`;
+    }
+
+    // Add event listener to remove filter tags
+    activeFiltersContainer.querySelectorAll('.remove-filter').forEach(tag => {
+        tag.addEventListener('click', (e) => {
+            const filterType = e.currentTarget.dataset.filter;
+            if (filterType === 'search') {
+                searchInput.value = '';
+                currentSearchTerm = '';
+            } else if (filterType === 'category') {
+                categoryFilter.value = 'All';
+                currentCategory = 'All';
+            }
+            handleFilterSort();
+        });
+    });
+}
+
+// Function to handle all filtering and sorting logic
+function handleFilterSort() {
+    currentSearchTerm = searchInput.value.toLowerCase();
+    currentCategory = categoryFilter.value;
+    currentSort = sortBy.value;
+
+    // 1. Filter blogs
+    filteredBlogs = blogs.filter(blog => {
+        const matchesSearch = blog.title.toLowerCase().includes(currentSearchTerm) || blog.content.toLowerCase().includes(currentSearchTerm);
+        const matchesCategory = currentCategory === 'All' || blog.category === currentCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    // 2. Sort blogs
+    filteredBlogs.sort((a, b) => {
+        if (currentSort === 'date') {
+            return new Date(b.date) - new Date(a.date);
+        } else if (currentSort === 'views') {
+            return b.views - a.views;
+        } else if (currentSort === 'likes') {
+            return b.likes - a.likes;
+        }
+    });
+
+    renderBlogs();
+    updateStats();
+}
+
+// Function to clear all filters
+function clearFilters() {
+    searchInput.value = '';
+    categoryFilter.value = 'All';
+    handleFilterSort();
+}
+
+// Modal functions
+function openModal() {
+    blogModal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+}
+
+function closeModal() {
+    blogModal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+    blogForm.reset();
+}
+
+// Form submission handler
+blogForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const newBlog = {
+        id: ++lastId,
+        title: document.getElementById('blogTitle').value,
+        content: document.getElementById('blogContent').value,
+        category: document.getElementById('blogCategory').value,
+        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+        views: 0,
+        likes: 0
+    };
+    blogs.unshift(newBlog); // Add to the beginning of the array
+    closeModal();
+    handleFilterSort();
+});
+
+// Event Listeners
+openModalBtn.addEventListener('click', openModal);
+closeModalBtn.addEventListener('click', closeModal);
+cancelModalBtn.addEventListener('click', closeModal);
+searchInput.addEventListener('input', handleFilterSort);
+categoryFilter.addEventListener('change', handleFilterSort);
+sortBy.addEventListener('change', handleFilterSort);
+window.addEventListener('click', (event) => {
+    if (event.target === blogModal) {
+        closeModal();
+    }
+});
+
+// Initial render
+document.addEventListener('DOMContentLoaded', () => {
+    handleFilterSort();
+});
