@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scribble</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-feather-alt logo-icon"></i>
+                    <div class="logo-text">
+                        <h1>Scribble</h1>
+                        <p>User Friendly Dashboard</p>
+                    </div>
+                </div>
+                <button class="btn btn-create" id="openModalBtn">
+                    <i class="fas fa-plus"></i>
+                    New Post
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="controls-card">
+            <div class="controls-grid">
+                <div class="input-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search posts...">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-folder"></i>
+                    <select id="categoryFilter" class="form-control">
+                        <option value="All">All Categories</option>
+                        <option value="Technology">Technology</option>
+                        <option value="Design">Design</option>
+                        <option value="Lifestyle">Lifestyle</option>
+                        <option value="Business">Business</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Food">Food</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-sort-amount-down"></i>
+                    <select id="sortBy" class="form-control">
+                        <option value="date">Sort by Date</option>
+                        <option value="views">Sort by Views</option>
+                        <option value="likes">Sort by Likes</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="stats-bar">
+                <p class="stats-info">
+                    Showing <span class="stats-count" id="visibleCount">0</span> of <span class="stats-count" id="totalCount">0</span> posts
+                </p>
+                <div class="filter-tags" id="activeFilters"></div>
+            </div>
+        </div>
+
+        <div class="blog-grid" id="blogGrid">
+            </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <i class="fas fa-search-minus empty-icon"></i>
+            <h3 class="empty-title">No posts found</h3>
+            <p class="empty-text">Try a different search or clear your filters.</p>
+            <button class="btn btn-clear-filters" onclick="clearFilters()">
+                <i class="fas fa-eraser"></i>
+                Clear Filters
+            </button>
+        </div>
+    </main>
+
+    <div class="modal" id="blogModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Create New Post</h2>
+                <button class="close-btn" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="blogForm">
+                <div class="form-group">
+                    <label class="form-label" for="blogTitle">Title</label>
+                    <input type="text" id="blogTitle" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="blogCategory">Category</label>
+                    <select id="blogCategory" class="form-control" required>
+                        <option value="Technology">Technology</option>
+                        <option value="Design">Design</option>
+                        <option value="Lifestyle">Lifestyle</option>
+                        <option value="Business">Business</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Food">Food</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="blogContent">Content</label>
+                    <textarea id="blogContent" class="form-textarea" required></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" id="cancelModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-plus-circle"></i>
+                        Publish
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <footer class="foot">
+        <h4>Tirth Mangukiya</h4>
+        <p>1st year CSE CORE strudent</p>
+
+    </footer>
+</body>
+</html>
